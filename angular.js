@@ -18052,42 +18052,44 @@ forEach(
   </example>
  */
 var ngIfDirective = ['$animate', function($animate) {
-  return {
-    transclude: 'element',
-    priority: 600,
-    terminal: true,
-    restrict: 'A',
-    $$tlb: true,
-    link: function ($scope, $element, $attr, ctrl, $transclude) {
-        var block, childScope;
-        $scope.$watch($attr.ngIf, function ngIfWatchAction(value) {
+    return {
+        transclude: 'element',
+        priority: 600,
+        terminal: true,
+        restrict: 'A',
+        $$tlb: true,
+        compile: function (element, attr, transclude) {
+            return function ($scope, $element, $attr) {
+                var block, childScope;
+                $scope.$watch($attr.ngIf, function ngIfWatchAction(value) {
 
-          if (toBoolean(value)) {
-            if (!childScope) {
-              childScope = $scope.$new();
-              $transclude(childScope, function (clone) {
-                block = {
-                  startNode: clone[0],
-                  endNode: clone[clone.length++] = document.createComment(' end ngIf: ' + $attr.ngIf + ' ')
-                };
-                $animate.enter(clone, $element.parent(), $element);
-              });
-            }
-          } else {
+                    if (toBoolean(value)) {
+                        if (!childScope) {
+                            childScope = $scope.$new();
+                            transclude(childScope, function (clone) {
+                                block = {
+                                    startNode: clone[0],
+                                    endNode: clone[clone.length++] = document.createComment(' end ngIf: ' + $attr.ngIf + ' ')
+                                };
+                                $animate.enter(clone, $element.parent(), $element);
+                            });
+                        }
+                    } else {
 
-            if (childScope) {
-              childScope.$destroy();
-              childScope = null;
-            }
+                        if (childScope) {
+                            childScope.$destroy();
+                            childScope = null;
+                        }
 
-            if (block) {
-              $animate.leave(getBlockElements(block));
-              block = null;
-            }
-          }
-        });
-    }
-  };
+                        if (block) {
+                            $animate.leave(getBlockElements(block));
+                            block = null;
+                        }
+                    }
+                });
+            };
+        }
+    };
 }];
 
 /**
